@@ -35,8 +35,27 @@ class BitmapViewerApp:
             self.image_path = None
             self.os_system.notification = f'Falha ao abrir imagem: {e}'
 
+    def __init__(self, os_system):
+        self.os_system = os_system
+        self.title_font = pygame.font.SysFont('Consolas', 24, bold=True)
+        self.image_surface = None
+        self.image_path = None
+        self.zoom = 1.0
+
+    def activate(self):
+        self.zoom = 1.0
+
     def handle_event(self, e):
-        pass
+        if e.type == KEYDOWN:
+            if e.key in (K_PLUS, K_EQUALS):
+                self.zoom = min(5.0, self.zoom + 0.1)
+            elif e.key in (K_MINUS, K_UNDERSCORE):
+                self.zoom = max(0.2, self.zoom - 0.1)
+            elif e.key == K_0:
+                self.zoom = 1.0
+            elif e.key == K_r:
+                if self.image_path:
+                    self.load_image(self.image_path)
 
     def draw(self, screen):
         screen.fill((15, 15, 15))
@@ -44,10 +63,16 @@ class BitmapViewerApp:
         header = self.title_font.render('Visualizador de Bitmap', True, (255, 255, 255))
         screen.blit(header, (16, 32))
         if self.image_surface:
-            rect = self.image_surface.get_rect(center=(self.os_system.width // 2, self.os_system.height // 2 + 30))
-            screen.blit(self.image_surface, rect)
-            info = self.os_system.font.render(f'{self.image_path}', True, (220,220,220))
-            screen.blit(info, (16, self.os_system.height - 32))
+            iw, ih = self.image_surface.get_size()
+            target_w = int(iw * self.zoom)
+            target_h = int(ih * self.zoom)
+            img = pygame.transform.smoothscale(self.image_surface, (target_w, target_h))
+            rect = img.get_rect(center=(self.os_system.width // 2, self.os_system.height // 2 + 30))
+            screen.blit(img, rect)
+            info = self.os_system.font.render(f'{self.image_path} | zoom:{self.zoom:.1f}', True, (220,220,220))
+            screen.blit(info, (16, self.os_system.height - 54))
+            hint = self.os_system.font.render('+/- para zoom, 0 reset, r reload', True, (220,220,220))
+            screen.blit(hint, (16, self.os_system.height - 30))
         else:
             texto = self.os_system.font.render('Selecione um arquivo de imagem no Gerenciador de Arquivos.', True, (220, 220, 220))
             screen.blit(texto, (16, 120))

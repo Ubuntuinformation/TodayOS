@@ -36,17 +36,73 @@ class FileManagerApp:
             elif e.key == K_UP:
                 self.selected = max(0, self.selected - 1)
             elif e.key in (K_RETURN, K_RIGHT):
-                entry = self.entries[self.selected]
-                target = os.path.abspath(os.path.join(self.current_path, entry))
-                if entry == '..':
-                    target = os.path.abspath(os.path.join(self.current_path, '..'))
-                if os.path.isdir(target):
-                    self.current_path = target
-                    self.selected = 0
-                    self.update_entries()
-                else:
-                    self.os_system.apps['bitmap'].load_image(target)
-                    self.os_system.set_app('bitmap')
+                self.open_selected()
+            elif e.key in (K_o, K_O):
+                self.open_selected()
+            elif e.key in (K_DELETE,):
+                self.delete_selected()
+            elif e.key == K_r and pygame.key.get_mods() & KMOD_CTRL:
+                self.rename_selected()
+
+    def get_selected_path(self):
+        if not self.entries:
+            return None
+        entry = self.entries[self.selected]
+        if entry == '..':
+            return os.path.abspath(os.path.join(self.current_path, '..'))
+        return os.path.abspath(os.path.join(self.current_path, entry))
+
+    def open_selected(self):
+        target = self.get_selected_path()
+        if not target:
+            return
+        if os.path.isdir(target):
+            self.current_path = target
+            self.selected = 0
+            self.update_entries()
+        elif os.path.isfile(target):
+            ext = os.path.splitext(target)[1].lower()
+            if ext in ['.png', '.jpg', '.jpeg', '.bmp', '.gif']:
+                self.os_system.apps['bitmap'].load_image(target)
+                self.os_system.set_app('bitmap')
+            else:
+                try:
+                    with open(target, 'r', encoding='utf-8', errors='replace') as f:
+                        text = f.read().splitlines()
+                    notepad = self.os_system.apps['notepad']
+                    notepad.lines = text
+                    notepad.file_path = target
+                    notepad.loaded_file = target
+                    self.os_system.set_app('notepad')
+                except Exception as e:
+                    self.os_system.notification = f'Falha ao abrir: {e}'
+
+    def delete_selected(self):
+        target = self.get_selected_path()
+        if not target or not os.path.exists(target):
+            return
+        try:
+            if os.path.isdir(target):
+                os.rmdir(target)
+                self.os_system.notification = f'Diretório removido: {target}'
+            else:
+                os.remove(target)
+                self.os_system.notification = f'Arquivo removido: {target}'
+            self.update_entries()
+        except Exception as e:
+            self.os_system.notification = f'Erro removendo: {e}'
+
+    def rename_selected(self):
+        target = self.get_selected_path()
+        if not target:
+            return
+        newname = os.path.join(self.current_path, f'renamed-{self.entries[self.selected]}')
+        try:
+            os.rename(target, newname)
+            self.os_system.notification = f'Renamed to {newname}'
+            self.update_entries()
+        except Exception as e:
+            self.os_system.notification = f'Erro rename: {e}'
 
     def draw(self, screen):
         screen.fill((10, 25, 35))
