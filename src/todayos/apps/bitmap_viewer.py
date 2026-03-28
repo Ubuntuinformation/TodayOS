@@ -9,6 +9,11 @@ class BitmapViewerApp:
         self.image_surface = None
         self.image_path = None
 
+    def draw_logo(self, screen):
+        pygame.draw.circle(screen, (180, 120, 255), (50, 50), 20)
+        l = self.os_system.font.render('B', True, (255, 255, 255))
+        screen.blit(l, (46, 42))
+
     def activate(self):
         pass
 
@@ -35,6 +40,7 @@ class BitmapViewerApp:
 
     def draw(self, screen):
         screen.fill((15, 15, 15))
+        self.draw_logo(screen)
         header = self.title_font.render('Visualizador de Bitmap', True, (255, 255, 255))
         screen.blit(header, (16, 32))
         if self.image_surface:

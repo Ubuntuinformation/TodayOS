@@ -10,6 +10,11 @@ class NotepadApp:
         self.current_line = ''
         self.file_path = None
 
+    def draw_logo(self, screen):
+        pygame.draw.circle(screen, (255, 181, 0), (50, 50), 22)
+        l = self.os_system.font.render('N', True, (20, 20, 20))
+        screen.blit(l, (44, 42))
+
     def activate(self):
         self.lines = ['Edite este texto. Ctrl+S para salvar em ./todayos_note.txt']
         self.current_line = ''
@@ -35,6 +40,7 @@ class NotepadApp:
 
     def draw(self, screen):
         screen.fill((20, 10, 30))
+        self.draw_logo(screen)
         header = self.title_font.render('Bloco de Notas', True, (255, 255, 255))
         screen.blit(header, (16, 32))
         y = 70
@@ -43,5 +49,5 @@ class NotepadApp:
             screen.blit(label, (16, y))
             y += 22
 
-        input_label = self.os_system.font.render(self.current_line + '|', True, (255, 255, 255))
+        input_label = self.os_system.font.render(self.current_line + ('_' if (pygame.time.get_ticks() // 500) % 2 == 0 else ''), True, (255, 255, 255))
         screen.blit(input_label, (16, 690))

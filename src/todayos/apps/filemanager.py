@@ -11,6 +11,11 @@ class FileManagerApp:
         self.title_font = pygame.font.SysFont('Consolas', 24, bold=True)
         self.update_entries()
 
+    def draw_logo(self, screen):
+        pygame.draw.rect(screen, (32, 176, 255), (45, 35, 24, 24))
+        l = self.os_system.font.render('F', True, (255, 255, 255))
+        screen.blit(l, (48, 36))
+
     def activate(self):
         self.current_path = os.getcwd()
         self.selected = 0
@@ -45,6 +50,7 @@ class FileManagerApp:
 
     def draw(self, screen):
         screen.fill((10, 25, 35))
+        self.draw_logo(screen)
         header = self.title_font.render(f'Gerenciador de Arquivos: {self.current_path}', True, (255, 255, 255))
         screen.blit(header, (16, 32))
         y = 70
